@@ -38,13 +38,18 @@ function loadParcelsData(index, search) {
         for (i = 0; i < dataArray.length; i++) {
             var currentElement = dataArray[i];
 
-            $("#dataGridBody").append("<tr><td>" + currentElement["address"] + "</td><td>"
+            $("#dataGridBody").append("<tr value='"+i+"' class='gridRow'><td>" + currentElement["address"] + "</td><td>"
             + currentElement["barcode"] + "</td><td>"
             + (new Date(currentElement["expectedDeliveryDate"]).toLocaleString()) + "</td><td>"
             + currentElement["reciever"] + "</td>" +
             "</tr>");
 
         }
+        $('.gridRow').css( 'cursor', 'pointer' );
+        $(".gridRow").click(function () {
+            console.log(dataArray[$(this).attr("value")])
+            $('#myModal2').modal("show");
+        })
         for (i = 0; i < totalPages; i++) {
             $("#paginationUl").append('<li value="' + i + '" class="paginate_button ' + (index == i ? 'active"' : '') + '"<a href="#">' + (i + 1) + '</a></li>');
         }
@@ -77,8 +82,12 @@ function loadParcelsData(index, search) {
             $("#registrationModalSaveButton").unbind()
             $("#registrationModalSaveButton").click(function () {
                 var registerData = {
-                    name: $("#nameField").val().trim(),
-                    price: $("#priceField").val().trim()
+                    reciever: $("#recieverField").val().trim(),
+                    address: $("#addressField").val().trim(),
+                    sentFrom: $("#sentFromField").val().trim(),
+                    formatId: $("#formatIdField").val().trim(),
+                    serviceTypeId: $("#serviceTypeIdField").val().trim(),
+                    barcode: $("#barcodeField").val().trim()
                 }
                 var valid = true;
                 for (key in registerData) {
@@ -93,8 +102,12 @@ function loadParcelsData(index, search) {
                         data: registerData
                     }).done(function (msg) {
                         if (msg) {
-                            loadFormatsData(0, "")
-                            $('#myModal').modal("hide");
+                            if(msg["code"]==0){
+                                loadParcelsData(0, "")
+                                $('#myModal').modal("hide");
+                            }else{
+                                alert(msg["message"])
+                            }
                         } else {
                             $('#myModal').modal("hide");
                             alert("მოხმდა შეცდომა. შეცდომის ხშირი განმეორების შემთხვევაში დაუკავშირდით ადმინისტრაციას.")
@@ -213,8 +226,13 @@ function loadUsersData(index, search) {
                         data: registerData
                     }).done(function (msg) {
                         if (msg) {
-                            loadUsersData(0, "")
-                            $('#myModal').modal("hide");
+                            if(msg["code"]==0){
+                                loadUsersData(0, "")
+                                $('#myModal').modal("hide");
+                            }else{
+                                alert(msg["message"]);
+                            }
+
                         } else {
                             $('#myModal').modal("hide");
                             alert("მოხმდა შეცდომა. შეცდომის ხშირი განმეორების შემთხვევაში დაუკავშირდით ადმინისტრაციას.")
@@ -560,7 +578,7 @@ $(document).ready(function () {
     if (readCookie("projectUserType") === "3" || readCookie("projectUserType") === "4") {
         canCreateParcels = true;
     }
-    
+
 
     loadParcelsData(0, "");
 })

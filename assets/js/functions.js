@@ -560,6 +560,7 @@ $(document).ready(function () {
     if (readCookie("projectUserType") === "3" || readCookie("projectUserType") === "4") {
         canCreateParcels = true;
     }
+    
 
     loadParcelsData(0, "");
 })

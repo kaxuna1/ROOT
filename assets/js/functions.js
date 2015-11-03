@@ -8,6 +8,20 @@ var organisationColumns = ["სახელი", 'მობილური', '�
 var regionColumns = ["სახელი"];
 var formatColumns = ["სახელი", "ფასი"];
 var serviceTypeColumns = ["სახელი", "ფასზე ნამატი"];
+var zoneColumns = ["სახელი", "რეგიონი"];
+var parcelViewColumns={
+    "address":"მისამართი",
+    "barcode":"ბარკოდი",
+    "expectedDeliveryDate":"სავარაუდო მიტანის დრო",
+    "sentFrom":"გაიგზავნა მისამართიდან",
+    "formatId":"ფორმატი",
+    "organisationId":"ორგანიზაცია",
+    "reciever":"მიმღები",
+    "status":"სტატუსი",
+    "serviceTypeId":"სერვისის ტიპი",
+    "deliveryDate":"მიტანის დრო",
+    "comment":"კომენტარი"
+}
 var userTypes = {
     "1": "sa",
     "2": "ადმინისტრატორი",
@@ -38,17 +52,34 @@ function loadParcelsData(index, search) {
         for (i = 0; i < dataArray.length; i++) {
             var currentElement = dataArray[i];
 
-            $("#dataGridBody").append("<tr value='"+i+"' class='gridRow'><td>" + currentElement["address"] + "</td><td>"
+            $("#dataGridBody").append("<tr value='" + i + "' class='gridRow'><td>" + currentElement["address"] + "</td><td>"
             + currentElement["barcode"] + "</td><td>"
-            + (new Date(currentElement["expectedDeliveryDate"]).toLocaleString()) + "</td><td>"
+            + (moment(new Date(currentElement["expectedDeliveryDate"])).lang("ka").format("LL")) + "</td><td>"
             + currentElement["reciever"] + "</td>" +
             "</tr>");
 
         }
-        $('.gridRow').css( 'cursor', 'pointer' );
+        $('.gridRow').css('cursor', 'pointer');
         $(".gridRow").click(function () {
             console.log(dataArray[$(this).attr("value")])
+<<<<<<< HEAD
             $("#myModalLabel2").html("ინფორმაცია გზავნილზე")
+=======
+            var currentParcel=dataArray[$(this).attr("value")]
+            $("#myModalLabel2").html(currentParcel["barcode"])
+            for(key in parcelViewColumns){
+                $("#parcelDataTable").append('<tr class="item-row">' +
+                '<td style="padding-top: 0px;padding-bottom: 0px;">' +
+                '<div class="text-primary">' +
+                '<p><strong>'+parcelViewColumns[key]+'</strong></p>' +
+                '</div>' +
+                '<p style="margin-bottom: 0px;" class="width-100p">' +
+                '<small>'+formatParcelData(key,currentParcel[key])+'</small>' +
+                '</p>' +
+                '</td>' +
+                '</tr>')
+            }
+>>>>>>> origin/master
             $('#myModal2').modal("show");
         })
         for (i = 0; i < totalPages; i++) {
@@ -103,10 +134,10 @@ function loadParcelsData(index, search) {
                         data: registerData
                     }).done(function (msg) {
                         if (msg) {
-                            if(msg["code"]==0){
+                            if (msg["code"] == 0) {
                                 loadParcelsData(0, "")
                                 $('#myModal').modal("hide");
-                            }else{
+                            } else {
                                 alert(msg["message"])
                             }
                         } else {
@@ -227,10 +258,10 @@ function loadUsersData(index, search) {
                         data: registerData
                     }).done(function (msg) {
                         if (msg) {
-                            if(msg["code"]==0){
+                            if (msg["code"] == 0) {
                                 loadUsersData(0, "")
                                 $('#myModal').modal("hide");
-                            }else{
+                            } else {
                                 alert(msg["message"]);
                             }
 
@@ -325,6 +356,25 @@ function loadFormatsData() {
 
     })
 }
+function loadZonesData() {
+    $.getJSON("api/getZones", function (result) {
+        $("#dataGridHeader").html("");
+        $("#dataGridBody").html("");
+        $("#paginationUl").html("");
+        for (i = 0; i < zoneColumns.length; i++) {
+            var currentElement = zoneColumns[i];
+            $("#dataGridHeader").append("<th>" + currentElement + "</th>")
+        }
+        console.log(result);
+        currentData = result;
+        for (i = 0; i < currentData.length; i++) {
+            var currentElement = currentData[i];
+
+            $("#dataGridBody").append("<tr><td>" + currentElement["name"] + "</td><td>" + currentElement["region"]["name"] + "</td></tr>");
+
+        }
+    })
+}
 function loadServiceTypesData() {
     $.getJSON("api/getservicetypes", function (result) {
         $("#dataGridHeader").html("");
@@ -383,6 +433,8 @@ $(document).ready(function () {
         '<a href="#"><i class="icon-note"></i><span data-translate="ფორმატები">ფორმატები</span></a></li>');
         $("#navigationUl").append('<li id="loadServiceTypesButton" class="k">' +
         '<a href="#"><i class="icon-note"></i><span data-translate="სერვისის ტიპები">სერვისის ტიპები</span></a></li>');
+        $("#navigationUl").append('<li id="loadZonesButton" class="k">' +
+        '<a href="#"><i class="icon-layers"></i><span data-translate="ზონები">ზონები</span></a></li>');
         $("#loadOrganisationsButton").click(function () {
             $(".k").attr("class", "k");
             $(this).attr("class", "k nav-active active");
@@ -571,6 +623,56 @@ $(document).ready(function () {
             loadServiceTypesData();
 
         })
+        $("#loadZonesButton").click(function () {
+            $(".k").attr("class", "k");
+            $(this).attr("class", "k nav-active active");
+            $("#addNewDiv").html('<button id="addNewButton" data-target="#myModal" class="btn btn-sm btn-dark"><i class="fa fa-plus"></i>ახალი ზონის დამატება</button>')
+            $("#addNewButton").click(function () {
+
+                $("#myModalLabel").html("ახალი ზონის დამატება");
+                var modalBody = $("#modalBody");
+                modalBody.html(zoneRegistrationFormTemplate);
+                $.getJSON("api/getregions", function (result) {
+                    if (result) {
+                        for (i = 0; i < result.length; i++) {
+                            $("#regionIdField").append("<option value='" + result[i]["id"] + "'>" + result[i]["name"] + "</option>")
+                        }
+                    }
+                })
+                $('#myModal').modal("show");
+                $("#registrationModalSaveButton").unbind();
+                $("#registrationModalSaveButton").click(function () {
+                    var registerData = {
+                        zoneName: $("#nameField").val().trim(),
+                        regionId: $("#regionIdField").val().trim()
+                    }
+                    var valid = true;
+                    for (key in registerData) {
+                        if (registerData[key] == "") {
+                            valid = false
+                        }
+                    }
+                    if (valid) {
+                        $.ajax({
+                            url: "api/createzone",
+                            method: "POST",
+                            data: registerData
+                        }).done(function (msg) {
+                            if (msg) {
+                                loadZonesData()
+                                $('#myModal').modal("hide");
+                            } else {
+                                $('#myModal').modal("hide");
+                                alert("მოხმდა შეცდომა. შეცდომის ხშირი განმეორების შემთხვევაში დაუკავშირდით ადმინისტრაციას.")
+                            }
+                        })
+                    } else {
+                        alert("შეავსეთ ყველა ველი რეგისტრაციისთვის")
+                    }
+                });
+            })
+            loadZonesData()
+        })
     }
 
     if (readCookie("projectUserType") === "1" || readCookie("projectUserType") === "2" || readCookie("projectUserType") === "3") {
@@ -583,3 +685,10 @@ $(document).ready(function () {
 
     loadParcelsData(0, "");
 })
+function formatParcelData(key,value){
+    if(key==="expectedDeliveryDate")
+    return moment(new Date(value)).lang("ka").format("LL");
+
+    return value;
+
+}

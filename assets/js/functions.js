@@ -48,6 +48,7 @@ function loadParcelsData(index, search) {
         $('.gridRow').css( 'cursor', 'pointer' );
         $(".gridRow").click(function () {
             console.log(dataArray[$(this).attr("value")])
+            $("#myModalLabel2").html("ინფორმაცია გზავნილზე")
             $('#myModal2').modal("show");
         })
         for (i = 0; i < totalPages; i++) {

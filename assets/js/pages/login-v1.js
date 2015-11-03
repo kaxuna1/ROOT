@@ -23,7 +23,7 @@ $(function() {
                     createCookie("projectUserType",msg["user"]["type"],365);
                     console.log(readCookie("projectSessionId"));
                     //l.stop();
-                    //window.location.href = "/";
+                    window.location.href = "/";
                 }
                 else{
                     l.stop();

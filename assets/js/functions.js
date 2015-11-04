@@ -14,13 +14,20 @@ var parcelViewColumns={
     "barcode":"ბარკოდი",
     "expectedDeliveryDate":"სავარაუდო მიტანის დრო",
     "sentFrom":"გაიგზავნა მისამართიდან",
-    "formatId":"ფორმატი",
-    "organisationId":"ორგანიზაცია",
+    "format":"ფორმატი",
+    "organisation":"ორგანიზაცია",
     "reciever":"მიმღები",
     "status":"სტატუსი",
     "serviceTypeId":"სერვისის ტიპი",
     "deliveryDate":"მიტანის დრო",
     "comment":"კომენტარი"
+}
+var parcelStatuses={
+    "1":"დარეგისტრირდა",
+    "2":"აიღო კურიერმა",
+    "3":"შემოვიდა საწყობში",
+    "4":"გადაეცა კურიერს",
+    "5":"მიტანილია"
 }
 var userTypes = {
     "1": "sa",
@@ -685,6 +692,12 @@ $(document).ready(function () {
 function formatParcelData(key,value){
     if(key==="expectedDeliveryDate")
     return moment(new Date(value)).locale("ka").format("LL");
+    if(key==="format")
+    return value["name"];
+    if(key==="organisation")
+    return value["name"]
+    if(key==="status")
+    return parcelStatuses[value]
 
     return value;
 

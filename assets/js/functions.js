@@ -54,7 +54,7 @@ function loadParcelsData(index, search) {
 
             $("#dataGridBody").append("<tr value='" + i + "' class='gridRow'><td>" + currentElement["address"] + "</td><td>"
             + currentElement["barcode"] + "</td><td>"
-            + (moment(new Date(currentElement["expectedDeliveryDate"])).lang("ka").format("LL")) + "</td><td>"
+            + (moment(new Date(currentElement["expectedDeliveryDate"])).locale("ka").format("LL")) + "</td><td>"
             + currentElement["reciever"] + "</td>" +
             "</tr>");
 
@@ -684,7 +684,7 @@ $(document).ready(function () {
 })
 function formatParcelData(key,value){
     if(key==="expectedDeliveryDate")
-    return moment(new Date(value)).lang("ka").format("LL");
+    return moment(new Date(value)).locale("ka").format("LL");
 
     return value;
 

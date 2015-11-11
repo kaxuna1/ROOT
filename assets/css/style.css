@@ -349,15 +349,6 @@ a.scrollup:hover {
   visibility: hidden;
   zoom: 1;
 }
-#status {
-  font-size: 32px;
-  height: 30px;
-  left: 46%;
-  margin: -15px 0 0 -15px;
-  position: absolute;
-  top: 45%;
-  width: 30px;
-}
 .spinner {
   -moz-user-select: none;
   -ms-user-select: none;

@@ -1,33 +1,34 @@
 /**
  * Created by KGelashvili on 10/26/2015.
  */
+var currentPage = 0;
 var currentData;
-var parcelColumns = ["მისამართი", "ბარკოდი", "მოსალოდნელი მიტანის დრო", "მიმღები"];
+var parcelColumns = ["#","მისამართი", "ბარკოდი", "მოსალოდნელი მიტანის დრო", "მიმღები"];
 var userColumns = ["სახელი", "გვარი", "მომხმარებლის სახელი", "პირადი ნომერი", "მობილური"];
 var organisationColumns = ["სახელი", 'მობილური', 'მისამართი', 'ელ.ფოსტა'];
 var regionColumns = ["სახელი"];
 var formatColumns = ["სახელი", "ფასი"];
 var serviceTypeColumns = ["სახელი", "ფასზე ნამატი"];
 var zoneColumns = ["სახელი", "რეგიონი"];
-var parcelViewColumns={
-    "address":"მისამართი",
-    "barcode":"ბარკოდი",
-    "expectedDeliveryDate":"სავარაუდო მიტანის დრო",
-    "sentFrom":"გაიგზავნა მისამართიდან",
-    "format":"ფორმატი",
-    "organisation":"ორგანიზაცია",
-    "reciever":"მიმღები",
-    "status":"სტატუსი",
-    "serviceTypeId":"სერვისის ტიპი",
-    "deliveryDate":"მიტანის დრო",
-    "comment":"კომენტარი"
+var parcelViewColumns = {
+    "address": "მისამართი",
+    "barcode": "ბარკოდი",
+    "expectedDeliveryDate": "სავარაუდო მიტანის დრო",
+    "sentFrom": "გაიგზავნა მისამართიდან",
+    "format": "ფორმატი",
+    "organisation": "ორგანიზაცია",
+    "reciever": "მიმღები",
+    "status": "სტატუსი",
+    "serviceType": "სერვისის ტიპი",
+    "deliveryDate": "მიტანის დრო",
+    "comment": "კომენტარი"
 }
-var parcelStatuses={
-    "1":"დარეგისტრირდა",
-    "2":"აიღო კურიერმა",
-    "3":"შემოვიდა საწყობში",
-    "4":"გადაეცა კურიერს",
-    "5":"მიტანილია"
+var parcelStatuses = {
+    "1": "დარეგისტრირდა",
+    "2": "აიღო კურიერმა",
+    "3": "შემოვიდა საწყობში",
+    "4": "გადაეცა კურიერს",
+    "5": "მიტანილია"
 }
 var userTypes = {
     "1": "sa",
@@ -59,10 +60,12 @@ function loadParcelsData(index, search) {
         for (i = 0; i < dataArray.length; i++) {
             var currentElement = dataArray[i];
 
-            $("#dataGridBody").append("<tr value='" + i + "' class='gridRow'><td>" + currentElement["address"] + "</td><td>"
-            + currentElement["barcode"] + "</td><td>"
-            + (moment(new Date(currentElement["expectedDeliveryDate"])).locale("ka").format("LL")) + "</td><td>"
-            + currentElement["reciever"] + "</td>" +
+            $("#dataGridBody").append("<tr>" +
+            "<td><input type='checkbox' /></td>" +
+            "<td value='" + i + "' class='gridRow'>" + currentElement["address"] + "</td>" +
+            "<td value='" + i + "' class='gridRow'> "+ currentElement["barcode"] + "</td>" +
+            "<td value='" + i + "' class='gridRow'>" + (moment(new Date(currentElement["expectedDeliveryDate"])).locale("ka").format("LL")) + "</td>" +
+            "<td value='" + i + "' class='gridRow'>" + currentElement["reciever"] + "</td>" +
             "</tr>");
 
         }
@@ -70,19 +73,198 @@ function loadParcelsData(index, search) {
         $(".gridRow").click(function () {
             console.log(dataArray[$(this).attr("value")])
             $("#myModalLabel2").html("ინფორმაცია გზავნილზე")
-            var currentParcel=dataArray[$(this).attr("value")]
+            var currentParcel = dataArray[$(this).attr("value")]
             $("#myModalLabel2").html(currentParcel["barcode"])
-            for(key in parcelViewColumns){
+            $("#parcelDataTable").html("");
+            for (key in parcelViewColumns) {
                 $("#parcelDataTable").append('<tr class="item-row">' +
                 '<td style="padding-top: 0px;padding-bottom: 0px;">' +
                 '<div class="text-primary">' +
-                '<p><strong>'+parcelViewColumns[key]+'</strong></p>' +
+                '<p><strong>' + parcelViewColumns[key] + '</strong></p>' +
+                '</div>' +
+                '<div id="' + key + '">' + formatParcelData(key, currentParcel[key]) + '</div>' +
+                '</td>' +
+                '</tr>')
+                var fieldName = key;
+                if(readCookie("projectUserType") === "1"||readCookie("projectUserType") === "2"){
+                    if(fieldName==="format"){
+                        $('#' + key).editable(function (value, settings) {
+                            var data = {id: currentParcel["id"]};
+                            console.log(settings);
+                            data[settings["name"]] = value;
+                            $.ajax({
+                                url: "api/editparcell",
+                                data: data,
+                                method: "POST"
+                            }).done(function(msg){
+                                loadParcelsData(currentPage,"")
+                            })
+
+
+                            return $(this).find('option:selected').text();
+                        }, {
+                            loadurl : 'api/getformatsforselect',
+                            indicator: 'მიმდინარეობს შენახვა...',
+                            tooltip: 'დააკლიკეთ ედიტირებისთვის',
+                            name: key+"Id",
+                            id: "k",
+                            type:"select",
+                            submit : 'OK'
+
+                        });
+                    }else{
+                        if(fieldName==="organisation"){
+                            $('#' + key).editable(function (value, settings) {
+                                var data = {id: currentParcel["id"]};
+                                console.log(settings);
+                                data[settings["name"]] = value;
+                                $.ajax({
+                                    url: "api/editparcell",
+                                    data: data,
+                                    method: "POST"
+                                }).done(function(msg){
+                                    loadParcelsData(currentPage,"")
+                                })
+
+
+                                return $(this).find('option:selected').text();
+                            }, {
+                                loadurl : 'api/getorganisationforselect',
+                                indicator: 'მიმდინარეობს შენახვა...',
+                                tooltip: 'დააკლიკეთ ედიტირებისთვის',
+                                name: key+"Id",
+                                id: "k",
+                                type:"select",
+                                submit : 'OK'
+
+                            });
+                        }else{
+                            if(fieldName==="serviceType"){
+                                $('#' + key).editable(function (value, settings) {
+                                    var data = {id: currentParcel["id"]};
+                                    console.log(settings);
+                                    data[settings["name"]] = value;
+                                    $.ajax({
+                                        url: "api/editparcell",
+                                        data: data,
+                                        method: "POST"
+                                    }).done(function(msg){
+                                        loadParcelsData(currentPage,"")
+                                    })
+
+
+                                    return $(this).find('option:selected').text();
+                                }, {
+                                    loadurl : 'api/getservicetypesforselect',
+                                    indicator: 'მიმდინარეობს შენახვა...',
+                                    tooltip: 'დააკლიკეთ ედიტირებისთვის',
+                                    name: key+"Id",
+                                    id: "k",
+                                    type:"select",
+                                    submit : 'OK'
+
+                                });
+                            }else{
+                                $('#' + key).editable(function (value, settings) {
+                                    var data = {id: currentParcel["id"]};
+                                    console.log(settings);
+                                    data[settings["name"]] = value;
+                                    $.ajax({
+                                        url: "api/editparcell",
+                                        data: data,
+                                        method: "POST"
+                                    }).done(function(msg){
+                                        loadParcelsData(currentPage,"")
+                                    })
+
+
+                                    return value;
+                                },
+                                    {
+                                    indicator: 'მიმდინარეობს შენახვა...',
+                                    tooltip: 'დააკლიკეთ ედიტირებისთვის',
+                                    name: key,
+                                    id: "k",
+                                    submit : 'OK'
+
+                                });
+                            }
+                        }
+                    }
+
+                }
+
+
+            }
+            if(readCookie("projectUserType") === "6"){
+                $("#giveParcelZone").remove()
+                $("#parcelModelFooter").append('<button id="giveParcelZone" type="button" class="btn btn-primary">ზონაზე მინიჭება</button>')
+                $("#giveParcelZone").unbind()
+                $("#giveParcelZone").click(function () {
+                    var parcelIDArray=[currentParcel["id"]];
+                    parcelIDArray.push()
+                    var popupTemplate =
+                        '<div id="zoneModal" class="modal fade">' +
+                        '  <div class="modal-dialog">' +
+                        '    <div class="modal-content">' +
+                        '      <div class="modal-header">' +
+                        '        <button type="button" class="close" data-dismiss="modal">&times;</button>' +
+                        '        <h4 class="modal-title">ზონის მინიჭება</h4>' +
+                        '      </div>' +
+                        '      <div class="modal-body">' +
+                        '<form>' +
+                        '<div class="form-group">' +
+                        '<label for="zoneIdField">ზონა</label>: ' +
+                        ' <select name="zone" id="zoneIdField"></select></div>' +
+                        '</div>' +
+                        '</form>' +
+                        '      <div class="modal-footer">' +
+                        '        <button type="button" class="btn btn-primary" id="saveParcelZone" >შენახვა</button>' +
+                        '        <button type="button" class="btn btn-link" data-dismiss="modal">გაუქმება</button>' +
+                        '      </div>' +
+                        '    </div>' +
+                        '  </div>' +
+                        '</div>';
+                    $("#zoneModal").remove();
+                    $("body").append(popupTemplate);
+                    showGiveZoneDialog(parcelIDArray);
+                })
+            }
+
+            $("#parcelHistoryTable").html("")
+            for (key in currentParcel["movements"]) {
+                $("#parcelHistoryTable").append('<tr class="item-row">' +
+                '<td style="padding-top: 0px;padding-bottom: 0px;">' +
+                '<div class="text-primary">' +
+                '<p><strong>' + currentParcel["movements"][key]["movementText"] + '</strong></p>' +
                 '</div>' +
                 '<p style="margin-bottom: 0px;" class="width-100p">' +
-                '<small>'+formatParcelData(key,currentParcel[key])+'</small>' +
+                '<small>' + moment(new Date(currentParcel["movements"][key]["date"])).locale("ka").format("LLLL") + '</small>' +
                 '</p>' +
                 '</td>' +
                 '</tr>')
+            }
+            if(readCookie("projectUserType") !== "1"){
+                $("#deleteParcelButton").unbind()
+                $("#deleteParcelButton").remove()
+            }else{
+                $("#deleteParcelButton").unbind()
+                $("#deleteParcelButton").click(function () {
+                    if(confirm("გსურთ ჩანაწერის წაშლა")){
+                        $.ajax({
+                            url:"api/deleteparcel",
+                            data:{id:currentParcel["id"]},
+                            method:"POST"
+                        }).done(function (msg) {
+                            if(msg){
+                                loadParcelsData(currentPage,"");
+                                $('#myModal2').modal("hide");
+                            }else{
+                                alert("მოხდა შეცდომა")
+                            }
+                        })
+                    }
+                })
             }
             $('#myModal2').modal("show");
         })
@@ -91,6 +273,8 @@ function loadParcelsData(index, search) {
         }
         $(".paginate_button").click(function () {
             //console.log($(this).val())
+
+            currentPage=$(this).val();
             loadParcelsData($(this).val(), "")
 
         })
@@ -209,7 +393,6 @@ function loadUsersData(index, search) {
                 $("#regionIdField").parent().remove();
                 $("#zoneIdField").parent().remove();
             }
-            $("#organisationIdField").append("<option value='" + 0 + "'>შიდა</option>")
             $.getJSON("api/getallorganisations", function (result) {
                 if (result) {
                     for (i = 0; i < result.length; i++) {
@@ -220,12 +403,17 @@ function loadUsersData(index, search) {
             for (var key in userTypes) {
                 $("#typeField").append("<option value='" + key + "'>" + userTypes[key] + "</option>");
             }
-            $("#regionIdField").append("<option value='" + 0 + "'>არცერთი</option>")
-            $("#zoneIdField").append("<option value='" + 0 + "'>არცერთი</option>")
             $.getJSON("api/getregions", function (result) {
                 if (result) {
                     for (i = 0; i < result.length; i++) {
                         $("#regionIdField").append("<option value='" + result[i]["id"] + "'>" + result[i]["name"] + "</option>")
+                    }
+                }
+            })
+            $.getJSON("api/getZones", function (result) {
+                if (result) {
+                    for (i = 0; i < result.length; i++) {
+                        $("#zoneIdField").append("<option value='" + result[i]["id"] + "'>" + result[i]["name"] + "</option>")
                     }
                 }
             })
@@ -689,16 +877,57 @@ $(document).ready(function () {
 
     loadParcelsData(0, "");
 })
-function formatParcelData(key,value){
-    if(key==="expectedDeliveryDate")
-    return moment(new Date(value)).locale("ka").format("LL");
-    if(key==="format")
-    return value["name"];
-    if(key==="organisation")
-    return value["name"]
-    if(key==="status")
-    return parcelStatuses[value]
+function formatParcelData(key, value) {
+    if(!value){
+        return "";
+    }
+    if (key === "expectedDeliveryDate"||key === "deliveryDate")
+        return moment(new Date(value)).locale("ka").format("LL");
+    if (key === "format")
+        return value["name"];
+    if (key === "organisation")
+        return value["name"]
+    if (key === "status")
+        return parcelStatuses[value]
+    if(key==="serviceType")
+        return value["name"]
 
     return value;
+
+}
+
+function showGiveZoneDialog(k){
+    var optionsTemplate=""
+    $.getJSON("api/getzonesformanager", function (result) {
+        for (i = 0; i < result.length; i++) {
+            optionsTemplate+="<option value='" + result[i]["id"] + "'>" + result[i]["name"] + "</option>";
+        }
+        $("#zoneIdField").html(optionsTemplate);
+
+
+        $("#zoneModal").modal("show")
+        $("#saveParcelZone").unbind();
+        $("#saveParcelZone").click(function () {
+            $.ajax({
+                url:'api/giveparcelzone',
+                data:{
+                    parcelIds: k.toString(),
+                    zoneId: $("#zoneIdField").val()
+                }
+            }).done(function (msg) {
+                if(msg){
+                    if (msg["code"] == 0) {
+                        loadParcelsData(currentPage, "")
+                        $('#zoneModal').modal("hide");
+                        $('#myModal').modal("hide");
+                    } else {
+                        alert(msg["message"]);
+                    }
+                }else{
+
+                }
+            })
+        })
+    })
 
 }

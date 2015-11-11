@@ -93,6 +93,9 @@
                 <div class="topnav">
                     <a class="menutoggle" href="#" data-toggle="sidebar-collapsed"><span
                             class="menu__handle"><span>Menu</span></span></a>
+                    <ul class="nav nav-icons">
+                        <li><Button class="btn-default">ზონის მინიჭება</Button></li>
+                    </ul>
 
                 </div>
             </div>
@@ -240,7 +243,7 @@
                                 <th class="text-left">ისტორია</th>
                             </tr>
                             </thead>
-                            <tbody>
+                            <tbody id="parcelHistoryTable">
                             <tr class="item-row">
                                 <td>
                                     <div class="text-primary">
@@ -261,6 +264,10 @@
 
 
 
+            </div>
+            <div id="parcelModelFooter" class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">დახურვა</button>
+                <button id="deleteParcelButton" type="button" class="btn btn-primary">წაშლა</button>
             </div>
 
         </div>
@@ -311,6 +318,8 @@
 <script src="assets/js/quickview.js"></script>
 <script src="assets/js/templates.js"></script>
 <script src="assets/js/moment-with-locales.min.js"></script>
+<script src="assets/js/jquery.jeditable.mini.js"></script>
+<script src="assets/js/jquery-ui.js"></script>
 <script src="assets/js/functions.js"></script>
 <!-- Chat Script -->
 <!-- Search Script -->
